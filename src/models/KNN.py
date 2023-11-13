@@ -1,5 +1,4 @@
 import numpy as np
-from collections import Counter
 
 class KNN_Model():
     # Constructor
@@ -22,22 +21,23 @@ class KNN_Model():
     # X is the data to be predicted
     # Return Predicted Data
     def predict(self, X):
-        result = [self.predict_el(x) for x in X.to_numpy()]
+        X_ = X.to_numpy()
+        result = np.empty(X_.shape[0])
+        for i, train in enumerate(X_):
+            distances = [ self.__euclidean_distance(train, data) for data in self.X_train ]
+            k_indices = np.argsort(distances)[:self.k]
+            k_nearest_labels = [self.y_train[i] for i in k_indices]
+            most_common = np.bincount(k_nearest_labels)
+            result[i] = np.argmax(most_common)
         return result
-    
+
     # Distance Method for KNN
     def __euclidean_distance(self,p1,p2):
         p1_numeric = np.array(p1, dtype=float)
         p2_numeric = np.array(p2, dtype=float)
         return np.sqrt(np.sum((p1_numeric - p2_numeric) ** 2))
     
-    def predict_el(self, x):
-        if (self.dist == 1):
-            distances = [self.__euclidean_distance(x, x_train) for x_train in self.X_train]
-        else : 
-            # other distance e.g. : Manhattan
-            distances = [self.__euclidean_distance(x, x_train) for x_train in self.X_train]
-        k_indices = np.argsort(distances)[:self.k]
-        k_nearest_labels = [self.y_train[i] for i in k_indices]
-        most_common = Counter(k_nearest_labels).most_common()
-        return most_common[0][0]
+    def __manhattan_distance(self, p1, p2):
+        p1_numeric = np.array(p1, dtype=float)
+        p2_numeric = np.array(p2, dtype=float)
+        return np.abs(p1_numeric - p2_numeric)
