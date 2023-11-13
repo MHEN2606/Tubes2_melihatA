@@ -1,5 +1,4 @@
 import numpy as np
-
 class KNN_Model():
     # Constructor
     # Define the number of neighbors to use in prediction
@@ -20,17 +19,22 @@ class KNN_Model():
     # Prediction using KNN Algorithm
     # X is the data to be predicted
     # Return Predicted Data
+    def __predict(self, X):
+        if (self.dist == 1):
+            distances = [self.__euclidean_distance(X, train) for train in self.X_train]
+        else:
+            # other distance e.g. : Manhattan
+            distances = [self.__manhattan_distance(X, train) for train in self.X_train]
+        k_indices = np.argsort(distances)[:self.k]
+        k_nearest_labels = [self.y_train[i] for i in k_indices]
+        most_common = np.bincount(k_nearest_labels)
+        return np.argmax(most_common)
+    
     def predict(self, X):
         X_ = X.to_numpy()
-        result = np.empty(X_.shape[0])
-        for i, train in enumerate(X_):
-            distances = [ self.__euclidean_distance(train, data) for data in self.X_train ]
-            k_indices = np.argsort(distances)[:self.k]
-            k_nearest_labels = [self.y_train[i] for i in k_indices]
-            most_common = np.bincount(k_nearest_labels)
-            result[i] = np.argmax(most_common)
-        return result
-
+        result = [self.__predict(test) for test in X_]
+        return np.array(result)
+    
     # Distance Method for KNN
     def __euclidean_distance(self,p1,p2):
         p1_numeric = np.array(p1, dtype=float)
