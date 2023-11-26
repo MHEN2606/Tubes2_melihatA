@@ -3,9 +3,10 @@ class KNN_Model():
     # Constructor
     # Define the number of neighbors to use in prediction
     # Default neighbors = 5
-    def __init__(self, k=3, dist=1):
+    def __init__(self, k=3, dist=1, weights="uniform"):
         self.k = k
         self.dist = dist
+        self.weights = weights
     
     # Fit Method
     # Fit the training dataset to the model
@@ -27,8 +28,15 @@ class KNN_Model():
             distances = [self.__manhattan_distance(X, train) for train in self.X_train]
         k_indices = np.argsort(distances)[:self.k]
         k_nearest_labels = [self.y_train[i] for i in k_indices]
-        most_common = np.bincount(k_nearest_labels)
+        most_common = None
+        if(self.weights == "uniform"):
+            most_common = np.bincount(k_nearest_labels)
+        elif(self.weights == "distance"):
+            weights = 1 / (np.array(distances) + 1e-10)
+            chosen_weights = [weights[i] for i in k_indices]
+            most_common = np.bincount(k_nearest_labels, weights=chosen_weights)
         return np.argmax(most_common)
+
     
     def predict(self, X):
         X_ = X.to_numpy()
